@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartOps - Register</title>
+</head>
+<body>
+    <h2>Create an Account</h2>
+
+    {% for message in get_flashed_messages() %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <input type="text" name="name" placeholder="Full Name" required>
+
+        <input type="email" name="email" placeholder="Email" required>
+
+        <input type="password" name="password"
+               placeholder="Password (12+ characters)"
+               minlength="12" required>
+
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,1121 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Demand Forecasting{% endblock %}
+
+{% block content %}
+
+<style>
+    /* SMART REORDER STYLES */
+
+    .reorder-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 26px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.035);
+    }
+
+    .reorder-panel h2 {
+        font-size: 21px;
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+
+    .reorder-description {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+    }
+
+    .reorder-form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .reorder-field {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .reorder-field label {
+        font-size: 14px;
+        font-weight: 650;
+        color: #334155;
+    }
+
+    .reorder-field input {
+        width: 100%;
+        min-width: 0;
+        padding: 13px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #1e293b;
+        font-family: inherit;
+        font-size: 14px;
+    }
+
+    .reorder-field input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .reorder-hint {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .reorder-button {
+        padding: 13px 24px;
+        background: #2563eb;
+        border: none;
+        border-radius: 9px;
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .reorder-button:hover {
+        background: #1d4ed8;
+    }
+
+    .reorder-results {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 26px;
+    }
+
+    .reorder-metric {
+        padding: 22px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .reorder-metric p {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 12px;
+    }
+
+    .reorder-metric h3 {
+        color: #1e293b;
+        font-size: 26px;
+        font-weight: 800;
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .reorder-metric span {
+        display: block;
+        margin-top: 7px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .reorder-insight {
+        margin-top: 24px;
+        padding: 22px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .reorder-insight h3 {
+        font-size: 17px;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .reorder-insight p {
+        color: #475569;
+        font-size: 14px;
+        line-height: 1.8;
+        margin-top: 12px;
+    }
+
+    .reorder-demo-note {
+        margin-top: 18px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #64748b;
+    }
+
+    .forecast-insight-row {
+        margin: 14px 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1000px) {
+        .reorder-results {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .reorder-panel {
+            padding: 22px;
+        }
+
+        .reorder-form-grid,
+        .reorder-results {
+            grid-template-columns: 1fr;
+        }
+
+        .reorder-button {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<!-- ======================================
+     PAGE HEADER
+====================================== -->
+
+<section class="welcome-section">
+
+    <p class="eyebrow">DEMAND FORECASTING</p>
+
+    <h1>Demand Forecast — {{ item.name }}</h1>
+
+    <p class="subtitle">
+        SKU: {{ item.sku }} |
+        Inventory forecasting and replenishment planning.
+    </p>
+
+    <p class="subtitle">
+        DEMO DATA — Estimates are not based on
+        verified store consumption.
+    </p>
+
+</section>
+
+
+<!-- ======================================
+     NAVIGATION
+====================================== -->
+
+<div class="inventory-actions">
+
+    <a
+        class="button"
+        href="{{ url_for('inventory.inventory_dashboard') }}"
+    >
+        Back to Inventory
+    </a>
+
+    <a
+        class="button secondary-button"
+        href="{{ url_for('inventory.get_forecast', item_id=item.id) }}"
+    >
+        View Forecast JSON
+    </a>
+
+</div>
+
+
+<!-- FORECAST ERROR MESSAGE -->
+
+<p
+    id="forecastMessage"
+    class="analytics-error"
+    role="status"
+></p>
+
+
+<!-- ======================================
+     FORECAST KPI CARDS
+====================================== -->
+
+<section class="analytics-summary">
+
+    <div class="card analytics-kpi">
+
+        <p>Average Daily Usage</p>
+
+        <h2 id="averageUsage">--</h2>
+
+        <span class="subtitle">
+            7-day historical average
+        </span>
+
+    </div>
+
+
+    <div class="card analytics-kpi">
+
+        <p>Estimated Stock Coverage</p>
+
+        <h2 id="daysRemaining">--</h2>
+
+        <span class="subtitle">
+            At current consumption rate
+        </span>
+
+    </div>
+
+
+    <div class="card analytics-kpi">
+
+        <p>Current Inventory</p>
+
+        <h2>
+            {{ item.quantity }} {{ item.unit }}
+        </h2>
+
+        <span class="subtitle">
+            Available inventory
+        </span>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================
+     DEMAND FORECAST CHART
+====================================== -->
+
+<section class="analytics-charts">
+
+    <div class="analytics-chart-card">
+
+        <h2>Demand Forecast — 30 / 60 / 90 Days</h2>
+
+        <p class="subtitle">
+            Projected cumulative inventory consumption.
+        </p>
+
+        <div class="analytics-chart-container">
+
+            <canvas id="forecastChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- REPLENISHMENT INSIGHTS -->
+
+    <div class="analytics-chart-card">
+
+        <h2>Replenishment Insights</h2>
+
+        <p class="subtitle">
+            Review estimated demand before planning purchases.
+        </p>
+
+        <p class="forecast-insight-row">
+            <strong>30-Day Demand:</strong>
+            <span id="forecast30">--</span>
+        </p>
+
+        <p class="forecast-insight-row">
+            <strong>60-Day Demand:</strong>
+            <span id="forecast60">--</span>
+        </p>
+
+        <p class="forecast-insight-row">
+            <strong>90-Day Demand:</strong>
+            <span id="forecast90">--</span>
+        </p>
+
+        <hr>
+
+        <p class="forecast-insight-row">
+            <strong>Inventory Alert Threshold:</strong>
+            {{ item.reorder_level }} {{ item.unit }}
+        </p>
+
+        <p class="forecast-insight-row">
+            <strong>30-Day Coverage Gap:</strong>
+            <span id="coverageGap">--</span>
+        </p>
+
+        <p class="forecast-insight-row">
+            <strong>Coverage Status:</strong>
+
+            <span
+                id="coverageStatus"
+                class="status-badge status-good"
+            >
+                Calculating...
+            </span>
+        </p>
+
+        <hr>
+
+        <p class="subtitle">
+            Last historical usage date:
+            <strong id="lastUsageDate">--</strong>
+        </p>
+
+        <p class="subtitle">
+            Forecast Method: 7-day moving-average baseline.
+        </p>
+
+        <p class="subtitle">
+            Estimates assume a constant consumption rate.
+            This is not the Random Forest model.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================
+     SMART REORDER RECOMMENDATIONS
+====================================== -->
+
+<section class="reorder-panel">
+
+    <p class="eyebrow">
+        SMART INVENTORY PLANNING
+    </p>
+
+    <h2>Smart Reorder Recommendations</h2>
+
+    <p class="reorder-description">
+        Adjust your supplier delivery time, safety stock,
+        and desired inventory coverage to estimate
+        when and how much inventory to reorder.
+    </p>
+
+
+    <!-- REORDER SETTINGS -->
+
+    <form id="reorderSettingsForm">
+
+        <div class="reorder-form-grid">
+
+            <!-- LEAD TIME -->
+
+            <div class="reorder-field">
+
+                <label for="leadTime">
+                    Supplier Lead Time (Days)
+                </label>
+
+                <input
+                    type="number"
+                    id="leadTime"
+                    value="7"
+                    min="0"
+                    max="365"
+                    step="1"
+                    required
+                >
+
+                <span class="reorder-hint">
+                    Days between placing an order
+                    and receiving the delivery.
+                </span>
+
+            </div>
+
+
+            <!-- SAFETY STOCK -->
+
+            <div class="reorder-field">
+
+                <label for="safetyStock">
+                    Safety Stock ({{ item.unit }})
+                </label>
+
+                <input
+                    type="number"
+                    id="safetyStock"
+                    value="5"
+                    min="0"
+                    max="99999999.99"
+                    step="0.01"
+                    required
+                >
+
+                <span class="reorder-hint">
+                    Extra inventory reserved
+                    for unexpected demand.
+                </span>
+
+            </div>
+
+
+            <!-- COVERAGE DAYS -->
+
+            <div class="reorder-field">
+
+                <label for="coverageDays">
+                    Coverage Target (Days)
+                </label>
+
+                <input
+                    type="number"
+                    id="coverageDays"
+                    value="30"
+                    min="1"
+                    max="365"
+                    step="1"
+                    required
+                >
+
+                <span class="reorder-hint">
+                    Desired stock coverage
+                    after the next delivery.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="reorder-button"
+            type="submit"
+        >
+            Calculate Recommendation
+        </button>
+
+    </form>
+
+
+    <!-- API ERROR -->
+
+    <p
+        id="reorderError"
+        class="analytics-error"
+        role="alert"
+    ></p>
+
+
+    <!-- REORDER RESULTS -->
+
+    <div class="reorder-results">
+
+        <div class="reorder-metric">
+
+            <p>Reorder Point</p>
+
+            <h3 id="reorderPoint">--</h3>
+
+            <span>
+                Stock level that triggers a purchase
+            </span>
+
+        </div>
+
+
+        <div class="reorder-metric">
+
+            <p>Estimated Days Until Reorder</p>
+
+            <h3 id="daysUntilReorder">--</h3>
+
+            <span>
+                Assuming stable daily demand
+            </span>
+
+        </div>
+
+
+        <div class="reorder-metric">
+
+            <p>Recommended Order Now</p>
+
+            <h3 id="recommendedQuantity">--</h3>
+
+            <span>
+                Estimated purchase quantity
+            </span>
+
+        </div>
+
+
+        <div class="reorder-metric">
+
+            <p>Target Inventory Level</p>
+
+            <h3 id="targetStock">--</h3>
+
+            <span>
+                Planning target including safety stock
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- BUSINESS RECOMMENDATION -->
+
+    <div class="reorder-insight">
+
+        <h3>Business Recommendation</h3>
+
+        <span
+            id="reorderStatus"
+            class="status-badge status-good"
+        >
+            Calculating...
+        </span>
+
+        <p id="reorderAdvice">
+            Analyzing inventory and supplier assumptions...
+        </p>
+
+    </div>
+
+
+    <p class="reorder-demo-note">
+        Demo mode: These calculations use simulated
+        historical consumption and hypothetical
+        supplier settings. Recommendations are not
+        verified for real purchasing decisions.
+        Values entered here are temporary and
+        are not saved to the database.
+    </p>
+
+</section>
+
+
+<!-- ======================================
+     CHART LIBRARIES
+====================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+
+<script>
+
+const unit = {{ item.unit|tojson }};
+
+const currentStock = Number("{{ item.quantity }}");
+
+const forecastApiUrl =
+    "{{ url_for('inventory.get_forecast', item_id=item.id) }}";
+
+const reorderApiUrl =
+    "{{ url_for('inventory.get_reorder_recommendation', item_id=item.id) }}";
+
+
+// ======================================
+// NUMBER FORMATTING
+// ======================================
+
+function formatNumber(value) {
+
+    return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+
+}
+
+function formatQuantity(value) {
+
+    return formatNumber(value) + " " + unit;
+
+}
+
+
+// ======================================
+// 1. LOAD DEMAND FORECAST
+// ======================================
+
+async function loadForecast() {
+
+    const message = document.getElementById(
+        "forecastMessage"
+    );
+
+    try {
+
+        const response = await fetch(
+            forecastApiUrl
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error || "Unable to load forecast."
+            );
+
+        }
+
+        const averageUsage = Number(
+            data.average_daily_usage
+        );
+
+        const daysRemaining =
+            data.days_remaining === null
+                ? null
+                : Number(data.days_remaining);
+
+        const demand30 = Number(
+            data.forecast_30_days
+        );
+
+        const demand60 = Number(
+            data.forecast_60_days
+        );
+
+        const demand90 = Number(
+            data.forecast_90_days
+        );
+
+
+        // UPDATE KPI CARDS
+
+        document.getElementById(
+            "averageUsage"
+        ).textContent =
+            formatQuantity(averageUsage) + "/day";
+
+        document.getElementById(
+            "daysRemaining"
+        ).textContent =
+            daysRemaining === null
+                ? "N/A"
+                : formatNumber(daysRemaining) + " days";
+
+
+        // UPDATE DEMAND VALUES
+
+        document.getElementById(
+            "forecast30"
+        ).textContent = formatQuantity(demand30);
+
+        document.getElementById(
+            "forecast60"
+        ).textContent = formatQuantity(demand60);
+
+        document.getElementById(
+            "forecast90"
+        ).textContent = formatQuantity(demand90);
+
+        document.getElementById(
+            "lastUsageDate"
+        ).textContent = data.as_of_date;
+
+
+        // COVERAGE GAP
+
+        const coverageGap = Math.max(
+            0,
+            demand30 - currentStock
+        );
+
+        document.getElementById(
+            "coverageGap"
+        ).textContent = formatQuantity(coverageGap);
+
+        const coverageStatus = document.getElementById(
+            "coverageStatus"
+        );
+
+        if (coverageGap > 0) {
+
+            coverageStatus.textContent =
+                "30-Day Stock Shortfall";
+
+            coverageStatus.className =
+                "status-badge status-low";
+
+        } else {
+
+            coverageStatus.textContent =
+                "30-Day Demand Covered";
+
+            coverageStatus.className =
+                "status-badge status-good";
+
+        }
+
+
+        // CHECK CHART LIBRARY
+
+        if (typeof Chart === "undefined") {
+
+            throw new Error(
+                "Chart.js failed to load."
+            );
+
+        }
+
+
+        // ENABLE DATA LABELS FOR THIS CHART
+
+        const chartPlugins =
+            typeof ChartDataLabels !== "undefined"
+                ? [ChartDataLabels]
+                : [];
+
+
+        // CREATE FORECAST CHART
+
+        new Chart(
+            document.getElementById("forecastChart"),
+            {
+
+                type: "bar",
+
+                plugins: chartPlugins,
+
+                data: {
+
+                    labels: [
+                        "30 Days",
+                        "60 Days",
+                        "90 Days"
+                    ],
+
+                    datasets: [{
+
+                        label: "Forecast Demand",
+
+                        data: [
+                            demand30,
+                            demand60,
+                            demand90
+                        ],
+
+                        backgroundColor: [
+                            "#2563eb",
+                            "#0f766e",
+                            "#8b5cf6"
+                        ],
+
+                        borderRadius: 8,
+
+                        maxBarThickness: 90
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            grace: "20%",
+
+                            title: {
+
+                                display: true,
+
+                                text: "Quantity (" + unit + ")"
+
+                            }
+
+                        }
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+                        datalabels: {
+
+                            anchor: "end",
+
+                            align: "end",
+
+                            offset: 5,
+
+                            color: "#1e293b",
+
+                            font: {
+                                size: 14,
+                                weight: "bold"
+                            },
+
+                            formatter: value =>
+                                formatQuantity(value)
+
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label: context =>
+                                    formatQuantity(
+                                        context.parsed.y
+                                    )
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+        message.textContent = "";
+
+    } catch (error) {
+
+        message.textContent = error.message;
+
+        console.error(
+            "Forecast Error:",
+            error
+        );
+
+    }
+
+}
+
+
+// ======================================
+// 2. LOAD SMART REORDER
+// ======================================
+
+async function loadReorderRecommendation() {
+
+    const errorMessage = document.getElementById(
+        "reorderError"
+    );
+
+    const advice = document.getElementById(
+        "reorderAdvice"
+    );
+
+    const statusElement = document.getElementById(
+        "reorderStatus"
+    );
+
+    errorMessage.textContent = "";
+
+    statusElement.textContent = "Calculating...";
+
+    advice.textContent =
+        "Updating your inventory recommendation...";
+
+    try {
+
+        // READ USER SETTINGS
+
+        const leadTime = document.getElementById(
+            "leadTime"
+        ).value;
+
+        const safetyStock = document.getElementById(
+            "safetyStock"
+        ).value;
+
+        const coverageDays = document.getElementById(
+            "coverageDays"
+        ).value;
+
+
+        // BUILD API QUERY PARAMETERS
+
+        const params = new URLSearchParams({
+
+            lead_time_days: leadTime,
+
+            safety_stock: safetyStock,
+
+            coverage_days: coverageDays
+
+        });
+
+
+        // FETCH SMART REORDER API
+
+        const response = await fetch(
+            reorderApiUrl + "?" + params.toString()
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to calculate recommendation."
+            );
+
+        }
+
+
+        // DISPLAY REORDER METRICS
+
+        document.getElementById(
+            "reorderPoint"
+        ).textContent =
+            formatQuantity(data.reorder_point);
+
+        document.getElementById(
+            "targetStock"
+        ).textContent =
+            formatQuantity(data.target_stock);
+
+        document.getElementById(
+            "recommendedQuantity"
+        ).textContent =
+            formatQuantity(
+                data.recommended_order_quantity
+            );
+
+        document.getElementById(
+            "daysUntilReorder"
+        ).textContent =
+            data.days_until_reorder === null
+                ? "N/A"
+                : formatNumber(
+                    data.days_until_reorder
+                ) + " days";
+
+
+        // ==================================
+        // GENERATE BUSINESS RECOMMENDATION
+        // ==================================
+
+        if (data.needs_reorder) {
+
+            statusElement.textContent =
+                "Reorder Recommended";
+
+            statusElement.className =
+                "status-badge status-low";
+
+            advice.textContent =
+                "Inventory has reached the estimated " +
+                "reorder point of " +
+                formatQuantity(data.reorder_point) +
+                ". Consider ordering approximately " +
+                formatQuantity(
+                    data.recommended_order_quantity
+                ) +
+                " to reach the planning target of " +
+                formatQuantity(data.target_stock) +
+                ". Confirm actual demand, incoming " +
+                "deliveries and supplier requirements " +
+                "before purchasing.";
+
+        } else {
+
+            statusElement.textContent = "Stock OK";
+
+            statusElement.className =
+                "status-badge status-good";
+
+            const daysText =
+                data.days_until_reorder === null
+                    ? "an unknown number of"
+                    : formatNumber(
+                        data.days_until_reorder
+                    );
+
+            advice.textContent =
+                "No purchase is needed right now " +
+                "under these demo assumptions. " +
+                "Current inventory is above the " +
+                "reorder point of " +
+                formatQuantity(data.reorder_point) +
+                ". Estimated time until reorder: " +
+                daysText +
+                " days, assuming stable daily usage. " +
+                "Review supplier lead time and " +
+                "real consumption before acting.";
+
+        }
+
+    } catch (error) {
+
+        errorMessage.textContent = error.message;
+
+        statusElement.textContent =
+            "Recommendation Unavailable";
+
+        statusElement.className =
+            "status-badge status-low";
+
+        advice.textContent =
+            "Please check the planning parameters " +
+            "and availability of historical data.";
+
+        document.getElementById(
+            "reorderPoint"
+        ).textContent = "--";
+
+        document.getElementById(
+            "targetStock"
+        ).textContent = "--";
+
+        document.getElementById(
+            "recommendedQuantity"
+        ).textContent = "--";
+
+        document.getElementById(
+            "daysUntilReorder"
+        ).textContent = "--";
+
+        console.error(
+            "Smart Reorder Error:",
+            error
+        );
+
+    }
+
+}
+
+
+// ======================================
+// 3. HANDLE USER INPUT
+// ======================================
+
+document.getElementById(
+    "reorderSettingsForm"
+).addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    loadReorderRecommendation();
+
+});
+
+
+// ======================================
+// 4. INITIALIZE DASHBOARD
+// ======================================
+
+loadForecast();
+
+loadReorderRecommendation();
+
+</script>
+
+{% endblock %}

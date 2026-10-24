@@ -1,0 +1,370 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Analytics Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ===== PAGE HEADER ===== -->
+<section class="welcome-section">
+    <p class="eyebrow">BUSINESS ANALYTICS</p>
+
+    <h1>Analytics Overview</h1>
+
+    <p class="subtitle">
+        Explore inventory valuation, category distribution,
+        and key business insights.
+    </p>
+</section>
+
+<!-- ===== NAVIGATION ===== -->
+<div class="inventory-actions">
+    <a
+        class="button"
+        href="{{ url_for('inventory.inventory_dashboard') }}"
+    >
+        Back to Inventory
+    </a>
+</div>
+
+<!-- ===== ERROR MESSAGE ===== -->
+<p id="message" class="analytics-error" role="status"></p>
+
+<!-- ===== KPI CARDS ===== -->
+<section class="analytics-summary">
+
+    <div class="card analytics-kpi">
+        <p>Total Inventory Items</p>
+        <h2 id="totalItems">--</h2>
+    </div>
+
+    <div class="card analytics-kpi">
+        <p>Total Categories</p>
+        <h2 id="totalCategories">--</h2>
+    </div>
+
+    <div class="card analytics-kpi">
+        <p>Total Inventory Value</p>
+        <h2 id="totalValue">--</h2>
+    </div>
+
+</section>
+
+<!-- ===== ANALYTICS CHARTS ===== -->
+<section class="analytics-charts">
+
+    <!-- BAR CHART -->
+    <div class="analytics-chart-card">
+        <h2>Inventory Value by Category</h2>
+
+        <div class="analytics-chart-container">
+            <canvas id="barChart"></canvas>
+        </div>
+    </div>
+
+    <!-- DOUGHNUT CHART -->
+    <div class="analytics-chart-card">
+        <h2>Inventory Value Distribution</h2>
+
+        <div class="analytics-chart-container">
+            <canvas id="doughnutChart"></canvas>
+        </div>
+    </div>
+
+</section>
+
+<!-- ===== JAVASCRIPT LIBRARIES ===== -->
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+<!-- ChartDataLabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+
+<script>
+
+async function loadAnalytics() {
+
+    const message = document.getElementById("message");
+
+    try {
+
+        // ===== 1. CHECK CHART LIBRARIES =====
+
+        if (
+            typeof Chart === "undefined" ||
+            typeof ChartDataLabels === "undefined"
+        ) {
+            throw new Error("Chart libraries failed to load.");
+        }
+
+        // Register plugin for displaying values on charts
+        Chart.register(ChartDataLabels);
+
+
+        // ===== 2. FETCH DATA FROM FLASK API =====
+
+        const response = await fetch(
+            "{{ url_for('inventory.inventory_by_category') }}"
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to retrieve analytics data."
+            );
+        }
+
+        const data = await response.json();
+
+
+        // ===== 3. EXTRACT CATEGORY DATA =====
+
+        const categories = data.map(
+            item => item.category || "Uncategorized"
+        );
+
+        const values = data.map(
+            item => Number(item.total_value)
+        );
+
+
+        // ===== 4. CALCULATE SUMMARY KPIs =====
+
+        const totalItems = data.reduce(
+            (sum, item) => sum + Number(item.total_items),
+            0
+        );
+
+        const totalValue = values.reduce(
+            (sum, value) => sum + value,
+            0
+        );
+
+        const totalCategories = categories.length;
+
+
+        // ===== 5. CURRENCY FORMAT =====
+
+        const currency = value => value.toLocaleString(
+            "en-US",
+            {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+
+        // ===== 6. UPDATE KPI CARDS =====
+
+        document.getElementById("totalItems").textContent =
+            totalItems;
+
+        document.getElementById("totalCategories").textContent =
+            totalCategories;
+
+        document.getElementById("totalValue").textContent =
+            currency(totalValue);
+
+
+        // ===== 7. HANDLE EMPTY DATA =====
+
+        if (data.length === 0) {
+            message.textContent =
+                "No inventory data available yet.";
+            return;
+        }
+
+
+        // ===== 8. BAR CHART =====
+
+        new Chart(document.getElementById("barChart"), {
+
+            type: "bar",
+
+            data: {
+                labels: categories,
+
+                datasets: [{
+                    label: "Inventory Value ($)",
+                    data: values,
+                    backgroundColor: "#2563eb",
+                    borderRadius: 6,
+                    maxBarThickness: 90
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+
+                        // Space for labels above bars
+                        grace: "20%",
+
+                        ticks: {
+                            callback: value => currency(value)
+                        }
+                    }
+                },
+
+                plugins: {
+
+                    // Display actual dollar values on bars
+                    datalabels: {
+                        anchor: "end",
+                        align: "end",
+                        offset: 5,
+
+                        color: "#1e293b",
+
+                        font: {
+                            size: 14,
+                            weight: "bold"
+                        },
+
+                        formatter: value => currency(value)
+                    },
+
+                    // Hover tooltip
+                    tooltip: {
+                        callbacks: {
+                            label: context =>
+                                currency(context.parsed.y)
+                        }
+                    }
+
+                }
+            }
+
+        });
+
+
+        // ===== 9. DOUGHNUT CHART =====
+
+        new Chart(document.getElementById("doughnutChart"), {
+
+            type: "doughnut",
+
+            data: {
+                labels: categories,
+
+                datasets: [{
+                    data: values,
+
+                    backgroundColor: [
+                        "#2563eb",
+                        "#16a34a",
+                        "#f59e0b",
+                        "#8b5cf6",
+                        "#ef4444",
+                        "#06b6d4"
+                    ],
+
+                    borderColor: "#ffffff",
+                    borderWidth: 2,
+
+                    hoverOffset: 8
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                cutout: "55%",
+
+                plugins: {
+
+                    // Display percentages inside segments
+                    datalabels: {
+
+                        color: "#ffffff",
+
+                        font: {
+                            size: 15,
+                            weight: "bold"
+                        },
+
+                        formatter: value => {
+
+                            if (totalValue <= 0) {
+                                return "";
+                            }
+
+                            const percent =
+                                value / totalValue * 100;
+
+                            return percent.toFixed(0) + "%";
+                        },
+
+                        // Hide labels for very small segments
+                        display: context => {
+
+                            if (totalValue <= 0) {
+                                return false;
+                            }
+
+                            const value =
+                                values[context.dataIndex];
+
+                            return value / totalValue >= 0.06;
+                        }
+                    },
+
+                    // Hover tooltip with amount and percentage
+                    tooltip: {
+                        callbacks: {
+
+                            label: context => {
+
+                                const value = context.parsed;
+
+                                const percent = totalValue > 0
+                                    ? (
+                                        value / totalValue * 100
+                                    ).toFixed(1)
+                                    : "0.0";
+
+                                return (
+                                    context.label +
+                                    ": " +
+                                    currency(value) +
+                                    " (" +
+                                    percent +
+                                    "%)"
+                                );
+
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        });
+
+    } catch (error) {
+
+        message.textContent = error.message;
+
+        console.error(error);
+
+    }
+}
+
+
+// ===== 10. INITIALIZE DASHBOARD =====
+
+loadAnalytics();
+
+</script>
+
+{% endblock %}

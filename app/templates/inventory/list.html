@@ -1,0 +1,239 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Inventory{% endblock %}
+
+{% block content %}
+
+<!-- ===== PAGE HEADER ===== -->
+<section class="welcome-section">
+
+    <p class="eyebrow">INVENTORY MANAGEMENT</p>
+
+    <h1>Inventory Overview</h1>
+
+    <p class="subtitle">
+        Monitor stock levels, inventory valuation,
+        and replenishment alerts for your business.
+    </p>
+
+</section>
+
+
+<!-- ===== ACTION BUTTONS ===== -->
+<div class="inventory-actions">
+
+    <a
+        class="button"
+        href="{{ url_for('inventory.add_inventory') }}"
+    >
+        + Add Inventory Item
+    </a>
+
+    <a
+        class="button secondary-button"
+        href="{{ url_for('inventory.analytics_dashboard') }}"
+    >
+        View Analytics Dashboard →
+    </a>
+
+</div>
+
+
+<!-- ===== SUMMARY CARDS ===== -->
+<div class="inventory-summary">
+
+    <div class="card metric-card">
+
+        <p>Total Inventory Items</p>
+
+        <h2>{{ total_items }}</h2>
+
+        <span>Unique inventory products</span>
+
+    </div>
+
+
+    <div class="card metric-card">
+
+        <p>Low Stock Alerts</p>
+
+        <h2>{{ low_stock_count }}</h2>
+
+        <span>Items requiring attention</span>
+
+    </div>
+
+
+    <div class="card metric-card">
+
+        <p>Total Inventory Value</p>
+
+        <h2>
+            ${{ "%.2f"|format(total_inventory_value) }}
+        </h2>
+
+        <span>Estimated current stock value</span>
+
+    </div>
+
+</div>
+
+
+<!-- ===== INVENTORY TABLE ===== -->
+<section class="table-container inventory-panel">
+
+    <div class="inventory-section-header">
+
+        <div>
+            <h2>Inventory Items</h2>
+
+            <p class="subtitle">
+                Current stock and inventory status
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="inventory-table-scroll">
+
+        <table class="inventory-table">
+
+            <thead>
+
+                <tr>
+                    <th>SKU</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                    <th>Stock Value</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for item in items %}
+
+                <tr>
+
+                    <!-- SKU -->
+                    <td>
+                        <strong>{{ item.sku }}</strong>
+                    </td>
+
+
+                    <!-- Item Name -->
+                    <td>{{ item.name }}</td>
+
+
+                    <!-- Category -->
+                    <td>
+                        {{ item.category or "Uncategorized" }}
+                    </td>
+
+
+                    <!-- Quantity -->
+                    <td>
+                        {{ item.quantity }} {{ item.unit }}
+                    </td>
+
+
+                    <!-- Unit Cost -->
+                    <td>
+                        ${{ "%.2f"|format(item.unit_cost) }}
+                    </td>
+
+
+                    <!-- Stock Value -->
+                    <td>
+                        ${{ "%.2f"|format(
+                            item.quantity * item.unit_cost
+                        ) }}
+                    </td>
+
+
+                    <!-- Stock Status -->
+                    <td>
+
+                        {% if item.quantity <= item.reorder_level %}
+
+                            <span class="status-badge status-low">
+                                Low Stock
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge status-good">
+                                In Stock
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- Actions: Edit and Forecast -->
+                    <td>
+
+                        <div style="
+                            display: flex;
+                            gap: 8px;
+                            align-items: center;
+                            flex-wrap: wrap;
+                        ">
+
+                            <!-- Edit Button -->
+                            <a
+                                class="edit-button"
+                                href="{{ url_for(
+                                    'inventory.edit_inventory',
+                                    item_id=item.id
+                                ) }}"
+                            >
+                                Edit
+                            </a>
+
+
+                            <!-- Forecast Button -->
+                            <a
+                                class="edit-button"
+                                href="{{ url_for(
+                                    'inventory.forecast_dashboard',
+                                    item_id=item.id
+                                ) }}"
+                            >
+                                Forecast
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+                    <td colspan="8">
+                        No inventory items found.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

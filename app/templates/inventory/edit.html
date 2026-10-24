@@ -1,0 +1,380 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Edit Inventory{% endblock %}
+
+{% block content %}
+
+<style>
+    .edit-container {
+        max-width: 1050px;
+    }
+
+    .edit-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 36px;
+        margin-top: 28px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.035);
+    }
+
+    .edit-section-header {
+        margin-bottom: 26px;
+    }
+
+    .edit-section-header h2 {
+        font-size: 20px;
+        font-weight: 750;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .edit-section-header p {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .edit-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .edit-field {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        min-width: 0;
+    }
+
+    .edit-field label {
+        color: #334155;
+        font-size: 14px;
+        font-weight: 650;
+    }
+
+    .edit-field input {
+        width: 100%;
+        padding: 14px 15px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        font-family: inherit;
+        font-size: 14px;
+        background: #ffffff;
+        color: #1e293b;
+        outline: none;
+    }
+
+    .edit-field input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .edit-hint {
+        font-size: 12px;
+        color: #94a3b8;
+        line-height: 1.5;
+    }
+
+    .edit-required {
+        color: #dc2626;
+    }
+
+    .edit-info {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 28px;
+    }
+
+    .edit-info-label {
+        color: #64748b;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .edit-info-value {
+        color: #1e293b;
+        font-size: 15px;
+        font-weight: 650;
+        overflow-wrap: anywhere;
+    }
+
+    .edit-divider {
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        margin: 32px 0;
+    }
+
+    .edit-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        margin-top: 36px;
+        padding-top: 26px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .edit-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 13px 24px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #475569;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 650;
+    }
+
+    .edit-cancel:hover {
+        background: #f1f5f9;
+    }
+
+    .edit-save {
+        padding: 13px 28px;
+        border: none;
+        border-radius: 9px;
+        background: #2563eb;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .edit-save:hover {
+        background: #1d4ed8;
+    }
+
+    @media (max-width: 768px) {
+        .edit-panel {
+            padding: 24px;
+        }
+
+        .edit-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .edit-actions {
+            flex-direction: column-reverse;
+        }
+
+        .edit-cancel,
+        .edit-save {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div class="edit-container">
+
+    <!-- ========== PAGE HEADER ========== -->
+    <section class="welcome-section">
+
+        <p class="eyebrow">
+            INVENTORY MANAGEMENT
+        </p>
+
+        <h1>Edit Inventory Item</h1>
+
+        <p class="subtitle">
+            Update stock quantities and reorder
+            thresholds for your inventory product.
+        </p>
+
+    </section>
+
+
+    <!-- ========== EDIT PANEL ========== -->
+    <div class="edit-panel">
+
+        <!-- PRODUCT INFORMATION -->
+        <div class="edit-section-header">
+
+            <h2>Product Information</h2>
+
+            <p>
+                Review the product details before updating stock.
+            </p>
+
+        </div>
+
+
+        <div class="edit-info">
+
+            <div class="edit-grid">
+
+                <div>
+                    <p class="edit-info-label">Item Name</p>
+
+                    <p class="edit-info-value">
+                        {{ item.name }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="edit-info-label">SKU</p>
+
+                    <p class="edit-info-value">
+                        {{ item.sku }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="edit-info-label">Category</p>
+
+                    <p class="edit-info-value">
+                        {{ item.category or "Uncategorized" }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="edit-info-label">Measurement Unit</p>
+
+                    <p class="edit-info-value">
+                        {{ item.unit }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="edit-info-label">Unit Cost</p>
+
+                    <p class="edit-info-value">
+                        ${{ "%.2f"|format(item.unit_cost) }}
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========== EDIT FORM ========== -->
+        <form
+            method="POST"
+            action="{{ url_for(
+                'inventory.edit_inventory',
+                item_id=item.id
+            ) }}"
+        >
+
+            <!-- CSRF PROTECTION -->
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+
+            <div class="edit-section-header">
+
+                <h2>Stock Management</h2>
+
+                <p>
+                    Adjust the available inventory
+                    quantity and low-stock alert threshold.
+                </p>
+
+            </div>
+
+
+            <div class="edit-grid">
+
+                <!-- QUANTITY -->
+                <div class="edit-field">
+
+                    <label for="quantity">
+                        Current Quantity
+                        <span class="edit-required">*</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="quantity"
+                        name="quantity"
+                        min="0"
+                        max="9999999999.99"
+                        step="0.01"
+                        value="{{ request.form.get(
+                            'quantity',
+                            item.quantity
+                        ) }}"
+                        required
+                    >
+
+                    <span class="edit-hint">
+                        Enter the current stock quantity
+                        in {{ item.unit }}.
+                    </span>
+
+                </div>
+
+
+                <!-- REORDER LEVEL -->
+                <div class="edit-field">
+
+                    <label for="reorder_level">
+                        Reorder Level
+                        <span class="edit-required">*</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="reorder_level"
+                        name="reorder_level"
+                        min="0"
+                        max="9999999999.99"
+                        step="0.01"
+                        value="{{ request.form.get(
+                            'reorder_level',
+                            item.reorder_level
+                        ) }}"
+                        required
+                    >
+
+                    <span class="edit-hint">
+                        Trigger a low-stock alert when
+                        inventory reaches this level.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========== ACTION BUTTONS ========== -->
+            <div class="edit-actions">
+
+                <a
+                    class="edit-cancel"
+                    href="{{ url_for(
+                        'inventory.inventory_dashboard'
+                    ) }}"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    class="edit-save"
+                    type="submit"
+                >
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

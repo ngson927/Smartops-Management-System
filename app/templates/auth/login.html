@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login | SmartOps Management</title>
+
+    <style>
+
+        /* =====================================
+           GLOBAL STYLES
+        ===================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Arial, sans-serif;
+
+            background: #f4f7fb;
+            color: #1e293b;
+
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 24px;
+        }
+
+
+        /* =====================================
+           LOGIN CONTAINER
+        ===================================== */
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            width: 100%;
+            max-width: 1050px;
+            min-height: 590px;
+
+            background: #ffffff;
+
+            border-radius: 20px;
+            overflow: hidden;
+
+            box-shadow: 0 20px 65px rgba(15, 23, 42, 0.10);
+
+            border: 1px solid #e2e8f0;
+        }
+
+
+        /* =====================================
+           LEFT BRANDING PANEL
+        ===================================== */
+
+        .login-branding {
+            background: linear-gradient(
+                145deg,
+                #101f39,
+                #172d50
+            );
+
+            color: white;
+
+            padding: 55px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-branding::after {
+            content: "";
+
+            position: absolute;
+
+            width: 350px;
+            height: 350px;
+
+            border-radius: 50%;
+
+            right: -160px;
+            bottom: -160px;
+
+            background: rgba(59, 130, 246, 0.10);
+        }
+
+        .brand {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.3px;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .brand-subtitle {
+            margin-top: 8px;
+
+            color: #94a3b8;
+
+            font-size: 14px;
+        }
+
+        .branding-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .branding-content h2 {
+            font-size: 36px;
+            line-height: 1.2;
+            letter-spacing: -1px;
+
+            margin-bottom: 20px;
+        }
+
+        .branding-content p {
+            color: #cbd5e1;
+
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .branding-footer {
+            color: #94a3b8;
+            font-size: 13px;
+            position: relative;
+            z-index: 1;
+        }
+
+
+        /* =====================================
+           RIGHT LOGIN PANEL
+        ===================================== */
+
+        .login-form-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            padding: 65px;
+        }
+
+        .login-eyebrow {
+            color: #2563eb;
+
+            font-size: 12px;
+            font-weight: 800;
+
+            letter-spacing: 2px;
+
+            margin-bottom: 16px;
+        }
+
+        .login-form-section h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+
+            margin-bottom: 12px;
+        }
+
+        .login-description {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+
+            margin-bottom: 34px;
+        }
+
+
+        /* =====================================
+           FLASH MESSAGES
+        ===================================== */
+
+        .flash-message {
+            background: #eff6ff;
+
+            color: #1d4ed8;
+
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+
+            padding: 13px 15px;
+
+            margin-bottom: 22px;
+
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+
+        /* =====================================
+           FORM ELEMENTS
+        ===================================== */
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            color: #334155;
+
+            margin-bottom: 9px;
+        }
+
+        .form-group input {
+            width: 100%;
+
+            padding: 15px 16px;
+
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+
+            background: #ffffff;
+
+            color: #1e293b;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #2563eb;
+
+            box-shadow: 0 0 0 3px
+                rgba(37, 99, 235, 0.10);
+        }
+
+        .form-group input::placeholder {
+            color: #94a3b8;
+        }
+
+
+        /* =====================================
+           LOGIN BUTTON
+        ===================================== */
+
+        .login-button {
+            width: 100%;
+
+            padding: 15px;
+
+            background: #2563eb;
+            color: #ffffff;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+            margin-top: 5px;
+        }
+
+        .login-button:hover {
+            background: #1d4ed8;
+
+            transform: translateY(-1px);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+
+        /* =====================================
+           FOOTER
+        ===================================== */
+
+        .form-footer {
+            text-align: center;
+
+            margin-top: 28px;
+
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .back-link {
+            display: inline-block;
+
+            margin-top: 28px;
+
+            color: #64748b;
+
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+
+        /* =====================================
+           RESPONSIVE DESIGN
+        ===================================== */
+
+        @media (max-width: 800px) {
+
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+            }
+
+            .login-branding {
+                padding: 35px;
+                min-height: 220px;
+            }
+
+            .branding-content {
+                margin-top: 30px;
+            }
+
+            .branding-content h2 {
+                font-size: 26px;
+            }
+
+            .branding-content p {
+                font-size: 14px;
+            }
+
+            .branding-footer {
+                display: none;
+            }
+
+            .login-form-section {
+                padding: 38px;
+            }
+
+        }
+
+        @media (max-width: 480px) {
+
+            body {
+                padding: 12px;
+            }
+
+            .login-branding {
+                padding: 28px;
+            }
+
+            .login-form-section {
+                padding: 30px 24px;
+            }
+
+            .login-form-section h1 {
+                font-size: 28px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="login-container">
+
+        <!-- =====================================
+             LEFT: BRANDING
+        ===================================== -->
+
+        <section class="login-branding">
+
+            <div>
+
+                <div class="brand">
+                    SmartOps<span>.</span>
+                </div>
+
+                <p class="brand-subtitle">
+                    Management Platform
+                </p>
+
+            </div>
+
+
+            <div class="branding-content">
+
+                <h2>
+                    Smarter Operations.<br>
+                    Better Decisions.
+                </h2>
+
+                <p>
+                    Manage inventory, analyze business
+                    performance, and explore data-driven
+                    demand forecasting — all in one platform.
+                </p>
+
+            </div>
+
+
+            <div class="branding-footer">
+                SmartOps Management System
+            </div>
+
+        </section>
+
+
+        <!-- =====================================
+             RIGHT: LOGIN FORM
+        ===================================== -->
+
+        <section class="login-form-section">
+
+            <p class="login-eyebrow">
+                WELCOME TO SMARTOPS
+            </p>
+
+            <h1>Welcome Back</h1>
+
+            <p class="login-description">
+                Sign in to access your business
+                management dashboard.
+            </p>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% for message in get_flashed_messages() %}
+
+                <div
+                    class="flash-message"
+                    role="status"
+                >
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+
+            <!-- LOGIN FORM -->
+
+            <form
+                method="POST"
+                action="{{ url_for('auth.login') }}"
+            >
+
+                <!-- CSRF PROTECTION -->
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    class="login-button"
+                    type="submit"
+                >
+                    Sign In
+                </button>
+
+            </form>
+
+
+            <!-- FOOTER -->
+
+            <p class="form-footer">
+                Authorized users only
+            </p>
+
+
+            <a
+                class="back-link"
+                href="{{ url_for('home') }}"
+            >
+                ← Back to Dashboard
+            </a>
+
+        </section>
+
+    </div>
+
+</body>
+
+</html>

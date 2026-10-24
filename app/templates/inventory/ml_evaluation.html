@@ -1,0 +1,713 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - ML Evaluation{% endblock %}
+
+{% block content %}
+
+<!-- ========== PAGE HEADER ========== -->
+<section class="welcome-section">
+
+    <p class="eyebrow">MACHINE LEARNING ANALYTICS</p>
+
+    <h1>ML Model Evaluation</h1>
+
+    <p class="subtitle">
+        Compare Random Forest Regression against a
+        7-day Moving Average baseline.
+    </p>
+
+</section>
+
+
+<!-- ========== NAVIGATION ========== -->
+<div class="inventory-actions">
+
+    <a
+        class="button"
+        href="{{ url_for('inventory.analytics_dashboard') }}"
+    >
+        Back to Analytics
+    </a>
+
+    <a
+        class="button secondary-button"
+        href="{{ url_for('inventory.get_ml_evaluation') }}"
+    >
+        View Evaluation JSON
+    </a>
+
+</div>
+
+
+<!-- ========== DATASET OVERVIEW ========== -->
+<div class="inventory-panel"
+     style="margin-bottom: 24px;">
+
+    <h2>Model Evaluation Overview</h2>
+
+    <p class="subtitle">
+        Dataset:
+        <strong id="datasetName">Loading...</strong>
+    </p>
+
+    <p class="subtitle">
+        Evaluation:
+        <strong id="evaluationType">--</strong>
+    </p>
+
+    <p class="subtitle">
+        Training Samples:
+        <strong id="trainingSamples">--</strong>
+
+        &nbsp; | &nbsp;
+
+        Testing Samples:
+        <strong id="testingSamples">--</strong>
+    </p>
+
+    <p class="subtitle">
+        Test Period:
+        <strong id="testPeriod">--</strong>
+    </p>
+
+    <p class="subtitle">
+        Demonstration only: results use synthetic
+        consumption data, not actual store performance.
+    </p>
+
+</div>
+
+
+<!-- ========== ERROR MESSAGE ========== -->
+<p
+    id="mlError"
+    class="analytics-error"
+    role="alert"
+></p>
+
+
+<!-- ========== KPI CARDS ========== -->
+<section class="analytics-summary">
+
+    <div class="card analytics-kpi">
+
+        <p>Moving Average MAE</p>
+
+        <h2 id="baselineMAE">--</h2>
+
+        <span class="subtitle">
+            Baseline prediction error
+        </span>
+
+    </div>
+
+
+    <div class="card analytics-kpi">
+
+        <p>Random Forest MAE</p>
+
+        <h2 id="randomForestMAE">--</h2>
+
+        <span class="subtitle">
+            Machine learning prediction error
+        </span>
+
+    </div>
+
+
+    <div class="card analytics-kpi">
+
+        <p>MAE Improvement</p>
+
+        <h2 id="maeImprovement">--</h2>
+
+        <span class="subtitle">
+            Relative to Moving Average
+        </span>
+
+    </div>
+
+</section>
+
+
+<!-- ========== CHARTS ========== -->
+<section class="analytics-charts">
+
+
+    <!-- ACTUAL VS PREDICTED -->
+    <div
+        class="analytics-chart-card"
+        style="grid-column: 1 / -1;"
+    >
+
+        <h2>Actual vs. Predicted Usage</h2>
+
+        <p class="subtitle">
+            One-day-ahead predictions on
+            the 30-day test dataset.
+        </p>
+
+        <div
+            class="analytics-chart-container"
+            style="height: 380px;"
+        >
+            <canvas id="predictionsChart"></canvas>
+        </div>
+
+    </div>
+
+
+    <!-- MODEL PERFORMANCE COMPARISON -->
+    <div class="analytics-chart-card">
+
+        <h2>Model Performance Comparison</h2>
+
+        <p class="subtitle">
+            MAE and RMSE — lower is better.
+        </p>
+
+        <div
+            class="analytics-chart-container"
+            style="height: 320px;"
+        >
+            <canvas id="metricsChart"></canvas>
+        </div>
+
+        <div style="margin-top: 20px;">
+
+            <p>
+                <strong>Moving Average RMSE:</strong>
+                <span id="baselineRMSE">--</span>
+            </p>
+
+            <p>
+                <strong>Random Forest RMSE:</strong>
+                <span id="randomForestRMSE">--</span>
+            </p>
+
+            <p>
+                <strong>RMSE Improvement:</strong>
+                <span id="rmseImprovement">--</span>
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- FEATURE IMPORTANCE -->
+    <div class="analytics-chart-card">
+
+        <h2>Random Forest Feature Importance</h2>
+
+        <p class="subtitle">
+            Relative feature contributions
+            within the trained model.
+        </p>
+
+        <div
+            class="analytics-chart-container"
+            style="height: 320px;"
+        >
+            <canvas id="featureChart"></canvas>
+        </div>
+
+        <p
+            class="subtitle"
+            style="margin-top: 20px;"
+        >
+            Feature importance does not represent
+            prediction accuracy or causation.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- ========== CHART LIBRARIES ========== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+<!-- NEW: ChartDataLabels Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+
+async function loadMLEvaluation() {
+
+    const errorMessage = document.getElementById("mlError");
+
+    try {
+
+        // =====================================
+        // 1. FETCH DATA FROM FLASK API
+        // =====================================
+
+        const response = await fetch(
+            "{{ url_for('inventory.get_ml_evaluation') }}"
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load ML evaluation data."
+            );
+        }
+
+        const data = await response.json();
+
+        if (typeof Chart === "undefined") {
+            throw new Error("Chart.js failed to load.");
+        }
+
+        // Use labels only for bar charts.
+        // Keep the line chart uncluttered.
+        const barLabelPlugins =
+            typeof ChartDataLabels !== "undefined"
+                ? [ChartDataLabels]
+                : [];
+
+
+        // =====================================
+        // 2. DATASET INFORMATION
+        // =====================================
+
+        document.getElementById("datasetName").textContent =
+            data.dataset;
+
+        document.getElementById("evaluationType").textContent =
+            data.evaluation_type;
+
+        document.getElementById("trainingSamples").textContent =
+            data.training_samples;
+
+        document.getElementById("testingSamples").textContent =
+            data.testing_samples;
+
+
+        // =====================================
+        // 3. READ EVALUATION METRICS
+        // =====================================
+
+        const baseline = data.metrics.moving_average;
+
+        const randomForest = data.metrics.random_forest;
+
+        const baselineMAE = Number(baseline.mae);
+
+        const randomForestMAE = Number(randomForest.mae);
+
+        const baselineRMSE = Number(baseline.rmse);
+
+        const randomForestRMSE = Number(randomForest.rmse);
+
+
+        // =====================================
+        // 4. CALCULATE IMPROVEMENT
+        // =====================================
+
+        const maeImprovement = baselineMAE > 0
+            ? (
+                (baselineMAE - randomForestMAE)
+                / baselineMAE
+              ) * 100
+            : null;
+
+        const rmseImprovement = baselineRMSE > 0
+            ? (
+                (baselineRMSE - randomForestRMSE)
+                / baselineRMSE
+              ) * 100
+            : null;
+
+
+        // =====================================
+        // 5. UPDATE KPI CARDS
+        // =====================================
+
+        document.getElementById("baselineMAE").textContent =
+            baselineMAE.toFixed(4);
+
+        document.getElementById("randomForestMAE").textContent =
+            randomForestMAE.toFixed(4);
+
+        document.getElementById("maeImprovement").textContent =
+            maeImprovement === null
+                ? "N/A"
+                : maeImprovement.toFixed(1) + "%";
+
+
+        document.getElementById("baselineRMSE").textContent =
+            baselineRMSE.toFixed(4);
+
+        document.getElementById("randomForestRMSE").textContent =
+            randomForestRMSE.toFixed(4);
+
+        document.getElementById("rmseImprovement").textContent =
+            rmseImprovement === null
+                ? "N/A"
+                : rmseImprovement.toFixed(1) + "%";
+
+
+        // =====================================
+        // 6. PREPARE PREDICTIONS
+        // =====================================
+
+        const predictions = data.predictions;
+
+        const dates = predictions.map(
+            row => row.date.slice(5)
+        );
+
+        const actualValues = predictions.map(
+            row => Number(row.actual)
+        );
+
+        const baselineValues = predictions.map(
+            row => Number(row.moving_average)
+        );
+
+        const randomForestValues = predictions.map(
+            row => Number(row.random_forest)
+        );
+
+
+        if (predictions.length > 0) {
+
+            const firstDate = predictions[0].date;
+
+            const lastDate =
+                predictions[predictions.length - 1].date;
+
+            document.getElementById("testPeriod").textContent =
+                firstDate + " to " + lastDate;
+        }
+
+
+        // =====================================
+        // 7. ACTUAL VS PREDICTED LINE CHART
+        // =====================================
+
+        new Chart(
+            document.getElementById("predictionsChart"),
+            {
+                type: "line",
+
+                data: {
+                    labels: dates,
+
+                    datasets: [
+
+                        {
+                            label: "Actual Usage",
+                            data: actualValues,
+                            borderColor: "#0f766e",
+                            backgroundColor: "#0f766e",
+                            borderWidth: 3,
+                            tension: 0.25,
+                            pointRadius: 3
+                        },
+
+                        {
+                            label: "Moving Average",
+                            data: baselineValues,
+                            borderColor: "#94a3b8",
+                            backgroundColor: "#94a3b8",
+                            borderWidth: 2,
+                            tension: 0.25,
+                            pointRadius: 2
+                        },
+
+                        {
+                            label: "Random Forest",
+                            data: randomForestValues,
+                            borderColor: "#2563eb",
+                            backgroundColor: "#2563eb",
+                            borderWidth: 2,
+                            tension: 0.25,
+                            pointRadius: 2
+                        }
+
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+
+                    scales: {
+
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Daily Usage (bags)"
+                            }
+                        },
+
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Test Date (MM-DD)"
+                            }
+                        }
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+                            position: "top"
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: context =>
+                                    context.dataset.label + ": " +
+                                    Number(context.parsed.y).toFixed(3) +
+                                    " bags"
+                            }
+                        }
+
+                    }
+                }
+            }
+        );
+
+
+        // =====================================
+        // 8. MAE / RMSE COMPARISON BAR CHART
+        // NEW: DISPLAY NUMBERS ABOVE BARS
+        // =====================================
+
+        new Chart(
+            document.getElementById("metricsChart"),
+            {
+                type: "bar",
+
+                plugins: barLabelPlugins,
+
+                data: {
+                    labels: ["MAE", "RMSE"],
+
+                    datasets: [
+
+                        {
+                            label: "Moving Average",
+
+                            data: [
+                                baselineMAE,
+                                baselineRMSE
+                            ],
+
+                            backgroundColor: "#94a3b8",
+                            borderRadius: 6
+                        },
+
+                        {
+                            label: "Random Forest",
+
+                            data: [
+                                randomForestMAE,
+                                randomForestRMSE
+                            ],
+
+                            backgroundColor: "#2563eb",
+                            borderRadius: 6
+                        }
+
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+
+                            // Extra room above labels
+                            grace: "25%"
+                        }
+                    },
+
+                    plugins: {
+
+                        legend: {
+                            position: "top"
+                        },
+
+                        // NEW: Value labels above bars
+                        datalabels: {
+                            anchor: "end",
+                            align: "end",
+                            offset: 4,
+
+                            color: "#1e293b",
+
+                            font: {
+                                size: 12,
+                                weight: "bold"
+                            },
+
+                            formatter: value =>
+                                Number(value).toFixed(4)
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: context =>
+                                    context.dataset.label + ": " +
+                                    Number(context.parsed.y).toFixed(4)
+                            }
+                        }
+
+                    }
+                }
+            }
+        );
+
+
+        // =====================================
+        // 9. PREPARE FEATURE IMPORTANCE
+        // =====================================
+
+        const readableNames = {
+            "day_of_week": "Day of Week",
+            "day_index": "Day Index",
+            "lag_1": "Previous Day",
+            "lag_7": "Previous Week",
+            "moving_avg_7": "7-Day Average",
+            "moving_avg_30": "30-Day Average"
+        };
+
+        const features = Object.entries(
+            data.feature_importance
+        ).sort(
+            (a, b) => b[1] - a[1]
+        );
+
+        const featureLabels = features.map(
+            entry => readableNames[entry[0]] || entry[0]
+        );
+
+        const featureValues = features.map(
+            entry => Number(entry[1]) * 100
+        );
+
+
+        // =====================================
+        // 10. FEATURE IMPORTANCE BAR CHART
+        // NEW: DISPLAY PERCENTAGES ON BARS
+        // =====================================
+
+        new Chart(
+            document.getElementById("featureChart"),
+            {
+                type: "bar",
+
+                plugins: barLabelPlugins,
+
+                data: {
+                    labels: featureLabels,
+
+                    datasets: [{
+                        label: "Feature Importance (%)",
+
+                        data: featureValues,
+
+                        backgroundColor: "#0f766e",
+
+                        borderRadius: 6,
+
+                        maxBarThickness: 34
+                    }]
+                },
+
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        x: {
+                            beginAtZero: true,
+
+                            // Extra room for percentages
+                            grace: "18%",
+
+                            title: {
+                                display: true,
+                                text: "Relative Importance (%)"
+                            }
+                        }
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+                        // NEW: Percentage labels
+                        datalabels: {
+                            anchor: "end",
+                            align: "end",
+                            offset: 5,
+
+                            color: "#1e293b",
+
+                            font: {
+                                size: 12,
+                                weight: "bold"
+                            },
+
+                            formatter: value =>
+                                Number(value).toFixed(1) + "%"
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: context =>
+                                    Number(context.parsed.x).toFixed(2) + "%"
+                            }
+                        }
+
+                    }
+                }
+            }
+        );
+
+
+    } catch (error) {
+
+        errorMessage.textContent = error.message;
+
+        console.error(
+            "ML Evaluation Dashboard Error:",
+            error
+        );
+
+    }
+}
+
+
+// =====================================
+// INITIALIZE DASHBOARD
+// =====================================
+
+loadMLEvaluation();
+
+</script>
+
+{% endblock %}

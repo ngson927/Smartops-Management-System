@@ -1,0 +1,206 @@
+{
+  "dataset": "Synthetic Black Tea Usage",
+  "evaluation_type": "One-day-ahead backtest",
+  "training_samples": 120,
+  "testing_samples": 30,
+  "metrics": {
+    "moving_average": {
+      "mae": 0.05657142857142857,
+      "rmse": 0.06693381846586796
+    },
+    "random_forest": {
+      "mae": 0.04494589875402378,
+      "rmse": 0.05249088932206974
+    }
+  },
+  "feature_importance": {
+    "day_of_week": 0.6072738293004244,
+    "day_index": 0.11745613286107506,
+    "lag_1": 0.08584271678944079,
+    "lag_7": 0.04992421776930219,
+    "moving_avg_7": 0.0667048600617966,
+    "moving_avg_30": 0.07279824321796106
+  },
+  "predictions": [
+    {
+      "date": "2026-09-23",
+      "actual": 0.5,
+      "moving_average": 0.45285714285714285,
+      "random_forest": 0.3966704112554113
+    },
+    {
+      "date": "2026-09-24",
+      "actual": 0.45,
+      "moving_average": 0.4557142857142858,
+      "random_forest": 0.3993228210678208
+    },
+    {
+      "date": "2026-09-25",
+      "actual": 0.42,
+      "moving_average": 0.4614285714285714,
+      "random_forest": 0.3969084974747475
+    },
+    {
+      "date": "2026-09-26",
+      "actual": 0.55,
+      "moving_average": 0.46714285714285714,
+      "random_forest": 0.544413546176046
+    },
+    {
+      "date": "2026-09-27",
+      "actual": 0.49,
+      "moving_average": 0.46714285714285714,
+      "random_forest": 0.5444927543290045
+    },
+    {
+      "date": "2026-09-28",
+      "actual": 0.38,
+      "moving_average": 0.4542857142857143,
+      "random_forest": 0.3979973466810967
+    },
+    {
+      "date": "2026-09-29",
+      "actual": 0.4,
+      "moving_average": 0.45428571428571424,
+      "random_forest": 0.39958678932178926
+    },
+    {
+      "date": "2026-09-30",
+      "actual": 0.44,
+      "moving_average": 0.4557142857142858,
+      "random_forest": 0.39205820887445886
+    },
+    {
+      "date": "2026-10-01",
+      "actual": 0.39,
+      "moving_average": 0.4471428571428572,
+      "random_forest": 0.41490906926406934
+    },
+    {
+      "date": "2026-10-02",
+      "actual": 0.38,
+      "moving_average": 0.4385714285714286,
+      "random_forest": 0.4375550524475525
+    },
+    {
+      "date": "2026-10-03",
+      "actual": 0.48,
+      "moving_average": 0.4328571428571429,
+      "random_forest": 0.5441610299422799
+    },
+    {
+      "date": "2026-10-04",
+      "actual": 0.57,
+      "moving_average": 0.4228571428571429,
+      "random_forest": 0.5377172384559883
+    },
+    {
+      "date": "2026-10-05",
+      "actual": 0.39,
+      "moving_average": 0.4342857142857143,
+      "random_forest": 0.42822705821955814
+    },
+    {
+      "date": "2026-10-06",
+      "actual": 0.5,
+      "moving_average": 0.4357142857142858,
+      "random_forest": 0.4355241469641469
+    },
+    {
+      "date": "2026-10-07",
+      "actual": 0.49,
+      "moving_average": 0.45,
+      "random_forest": 0.39338897727272726
+    },
+    {
+      "date": "2026-10-08",
+      "actual": 0.36,
+      "moving_average": 0.45714285714285713,
+      "random_forest": 0.3979273665223665
+    },
+    {
+      "date": "2026-10-09",
+      "actual": 0.39,
+      "moving_average": 0.45285714285714285,
+      "random_forest": 0.40554522186147174
+    },
+    {
+      "date": "2026-10-10",
+      "actual": 0.58,
+      "moving_average": 0.45428571428571424,
+      "random_forest": 0.5501057936507935
+    },
+    {
+      "date": "2026-10-11",
+      "actual": 0.51,
+      "moving_average": 0.4685714285714285,
+      "random_forest": 0.5467475162337662
+    },
+    {
+      "date": "2026-10-12",
+      "actual": 0.38,
+      "moving_average": 0.45999999999999996,
+      "random_forest": 0.39468897005772
+    },
+    {
+      "date": "2026-10-13",
+      "actual": 0.5,
+      "moving_average": 0.4585714285714286,
+      "random_forest": 0.3929268001443001
+    },
+    {
+      "date": "2026-10-14",
+      "actual": 0.45,
+      "moving_average": 0.4585714285714286,
+      "random_forest": 0.39190055014430003
+    },
+    {
+      "date": "2026-10-15",
+      "actual": 0.43,
+      "moving_average": 0.45285714285714285,
+      "random_forest": 0.3997773466810966
+    },
+    {
+      "date": "2026-10-16",
+      "actual": 0.48,
+      "moving_average": 0.4628571428571428,
+      "random_forest": 0.39248849567099564
+    },
+    {
+      "date": "2026-10-17",
+      "actual": 0.61,
+      "moving_average": 0.4757142857142857,
+      "random_forest": 0.5380448575036074
+    },
+    {
+      "date": "2026-10-18",
+      "actual": 0.51,
+      "moving_average": 0.48,
+      "random_forest": 0.5443045202020201
+    },
+    {
+      "date": "2026-10-19",
+      "actual": 0.37,
+      "moving_average": 0.48,
+      "random_forest": 0.39442897005772004
+    },
+    {
+      "date": "2026-10-20",
+      "actual": 0.43,
+      "moving_average": 0.47857142857142854,
+      "random_forest": 0.3960165277777778
+    },
+    {
+      "date": "2026-10-21",
+      "actual": 0.43,
+      "moving_average": 0.4685714285714285,
+      "random_forest": 0.38974569444444446
+    },
+    {
+      "date": "2026-10-22",
+      "actual": 0.43,
+      "moving_average": 0.46571428571428575,
+      "random_forest": 0.38601121031746044
+    }
+  ]
+}

@@ -1,0 +1,571 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+SmartOps - Business Insights
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .insights-page {
+        max-width: 1400px;
+    }
+
+    .insights-summary {
+        display: grid;
+        grid-template-columns: repeat(
+            4, minmax(0, 1fr)
+        );
+        gap: 18px;
+        margin: 28px 0;
+    }
+
+    .insights-metric {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 5px 20px
+            rgba(15, 23, 42, 0.035);
+    }
+
+    .insights-metric p {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 14px;
+    }
+
+    .insights-metric h2 {
+        font-size: 30px;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .insights-metric span {
+        display: block;
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 10px;
+        line-height: 1.5;
+    }
+
+    .insights-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 30px;
+        margin: 26px 0;
+        box-shadow: 0 5px 20px
+            rgba(15, 23, 42, 0.035);
+    }
+
+    .insights-panel h2 {
+        font-size: 21px;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .insights-description {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.7;
+        margin-bottom: 22px;
+    }
+
+    .insights-recommendation {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .insights-recommendation h3 {
+        font-size: 17px;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .insights-recommendation p {
+        color: #475569;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .insights-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .insights-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+        font-size: 14px;
+    }
+
+    .insights-table th {
+        padding: 16px 13px;
+        text-align: left;
+        background: #f8fafc;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .insights-table td {
+        padding: 18px 13px;
+        color: #334155;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .insights-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .insights-status {
+        display: inline-block;
+        padding: 7px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .insights-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .insights-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .insights-danger {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .insights-link {
+        display: inline-block;
+        text-decoration: none;
+        padding: 9px 13px;
+        background: #dfe7ff;
+        color: #1d4ed8;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .insights-link:hover {
+        background: #c7d7ff;
+    }
+
+    .insights-note {
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.8;
+        margin-top: 22px;
+    }
+
+    @media (max-width: 1100px) {
+        .insights-summary {
+            grid-template-columns: repeat(
+                2, minmax(0, 1fr)
+            );
+        }
+    }
+
+    @media (max-width: 600px) {
+        .insights-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .insights-panel {
+            padding: 20px;
+        }
+    }
+</style>
+
+
+<div class="insights-page">
+
+    <!-- PAGE HEADER -->
+    <section class="welcome-section">
+
+        <p class="eyebrow">
+            BUSINESS INTELLIGENCE
+        </p>
+
+        <h1>Business Insights Dashboard</h1>
+
+        <p class="subtitle">
+            Understand inventory risks, identify
+            purchasing priorities, and make
+            better stock management decisions.
+        </p>
+
+        <p class="subtitle">
+            DEMO MODE — Purchasing insights
+            are based on simulated usage.
+        </p>
+
+    </section>
+
+
+    <!-- NAVIGATION -->
+    <div class="inventory-actions">
+
+        <a
+            class="button"
+            href="{{ url_for('inventory.inventory_dashboard') }}"
+        >
+            View Inventory
+        </a>
+
+        <a
+            class="button secondary-button"
+            href="{{ url_for('inventory.inventory_transactions') }}"
+        >
+            Inventory Transactions →
+        </a>
+
+    </div>
+
+
+    <!-- SUMMARY CARDS -->
+    <section class="insights-summary">
+
+        <div class="insights-metric">
+
+            <p>Total Inventory Items</p>
+
+            <h2>{{ total_items }}</h2>
+
+            <span>
+                Products tracked in SmartOps
+            </span>
+
+        </div>
+
+        <div class="insights-metric">
+
+            <p>Total Inventory Value</p>
+
+            <h2>
+                ${{ "%.2f"|format(
+                    total_inventory_value
+                ) }}
+            </h2>
+
+            <span>
+                Current stock at recorded unit cost
+            </span>
+
+        </div>
+
+        <div class="insights-metric">
+
+            <p>Reorder Recommendations</p>
+
+            <h2>{{ reorder_now_count }}</h2>
+
+            <span>
+                Items triggering the demo reorder rule
+            </span>
+
+        </div>
+
+        <div class="insights-metric">
+
+            <p>Insufficient Usage Data</p>
+
+            <h2>{{ insufficient_data_count }}</h2>
+
+            <span>
+                Products requiring more history
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- BUSINESS ACTIONS -->
+    <section class="insights-panel">
+
+        <h2>Business Actions Today</h2>
+
+        <p class="insights-description">
+            Suggested priorities based on the
+            currently available inventory data.
+        </p>
+
+        <div class="insights-recommendation">
+
+            <h3>Inventory Planning Summary</h3>
+
+            {% if reorder_now_count > 0 %}
+
+                <p>
+                    {{ reorder_now_count }}
+                    item(s) reached their estimated
+                    reorder point under the demo
+                    assumptions. Review their
+                    recommendations below.
+                </p>
+
+            {% else %}
+
+                <p>
+                    No products with sufficient
+                    forecast data currently trigger
+                    the demo reorder rule.
+                </p>
+
+            {% endif %}
+
+
+            {% if insufficient_data_count > 0 %}
+
+                <p>
+                    {{ insufficient_data_count }}
+                    product(s) do not have enough
+                    consecutive daily usage records
+                    for a forecast.
+
+                    Collect more consumption data
+                    before relying on a purchasing
+                    recommendation.
+                </p>
+
+            {% endif %}
+
+
+            {% if low_stock_count > 0 %}
+
+                <p>
+                    {{ low_stock_count }}
+                    product(s) have reached their
+                    manually configured low-stock
+                    alert threshold.
+                </p>
+
+            {% endif %}
+
+
+            {% if total_items == 0 %}
+
+                <p>
+                    No inventory products exist yet.
+                    Add inventory items to begin
+                    monitoring business performance.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- PRODUCT INSIGHTS -->
+    <section class="insights-panel">
+
+        <h2>Inventory Planning by Product</h2>
+
+        <p class="insights-description">
+            Review stock, forecast coverage,
+            reorder points, and suggested
+            purchasing actions in one place.
+        </p>
+
+        <div class="insights-table-wrapper">
+
+            <table class="insights-table">
+
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Current Stock</th>
+                        <th>Daily Usage</th>
+                        <th>Reorder Point</th>
+                        <th>Days Until Reorder</th>
+                        <th>Order Now</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for row in insights %}
+
+                    <tr>
+
+                        <!-- PRODUCT -->
+                        <td>
+                            <strong>
+                                {{ row.item.name }}
+                            </strong>
+                        </td>
+
+
+                        <!-- CURRENT STOCK -->
+                        <td>
+                            {{ row.item.quantity }}
+                            {{ row.item.unit }}
+                        </td>
+
+
+                        {% if row.recommendation %}
+
+                            <!-- DAILY USAGE -->
+                            <td>
+                                {{ row.forecast.average_daily_usage
+                                   if row.forecast is mapping
+                                   else row.forecast["average_daily_usage"] }}
+                                {{ row.item.unit }}/day
+                            </td>
+
+
+                            <!-- REORDER POINT -->
+                            <td>
+                                {{ row.recommendation["reorder_point"] }}
+                                {{ row.item.unit }}
+                            </td>
+
+
+                            <!-- DAYS UNTIL REORDER -->
+                            <td>
+
+                                {% if row.recommendation[
+                                    "days_until_reorder"
+                                ] is not none %}
+
+                                    {{ row.recommendation[
+                                        "days_until_reorder"
+                                    ] }} days
+
+                                {% else %}
+
+                                    N/A
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ORDER QUANTITY -->
+                            <td>
+                                <strong>
+                                    {{ row.recommendation[
+                                        "recommended_order_quantity"
+                                    ] }}
+                                    {{ row.item.unit }}
+                                </strong>
+                            </td>
+
+                        {% else %}
+
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+
+                        {% endif %}
+
+
+                        <!-- STATUS -->
+                        <td>
+
+                            {% if row.status == "REORDER_NOW" %}
+
+                                <span class="
+                                    insights-status
+                                    insights-danger
+                                ">
+                                    Reorder Now
+                                </span>
+
+                            {% elif row.status == "STOCK_OK" %}
+
+                                <span class="
+                                    insights-status
+                                    insights-ok
+                                ">
+                                    Stock OK
+                                </span>
+
+                            {% else %}
+
+                                <span class="
+                                    insights-status
+                                    insights-warning
+                                ">
+                                    Needs History
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACTION -->
+                        <td>
+
+                            <a
+                                class="insights-link"
+                                href="{{ url_for(
+                                    'inventory.forecast_dashboard',
+                                    item_id=row.item.id
+                                ) }}"
+                            >
+                                View Forecast →
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td
+                            colspan="8"
+                            style="text-align:center;"
+                        >
+                            No inventory items found.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <p class="insights-note">
+            Planning assumptions: supplier lead
+            time = {{ lead_time_days }} days,
+            coverage target = {{ coverage_days }} days.
+
+            For this demo only, each product's
+            reorder level is used as its safety
+            stock assumption.
+
+            Demand estimates come from unverified
+            demonstration usage records.
+            Products without sufficient history
+            are not classified as Stock OK.
+
+            These suggestions should not be used
+            to purchase real inventory.
+        </p>
+
+    </section>
+
+</div>
+
+{% endblock %}

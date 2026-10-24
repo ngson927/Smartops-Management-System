@@ -1,0 +1,600 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Inventory Transactions{% endblock %}
+
+{% block content %}
+
+<style>
+    .transaction-container {
+        max-width: 1200px;
+    }
+
+    .transaction-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 26px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.035);
+    }
+
+    .transaction-panel h2 {
+        font-size: 20px;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .transaction-description {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .transaction-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .transaction-field {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        min-width: 0;
+    }
+
+    .transaction-field label {
+        font-size: 14px;
+        font-weight: 650;
+        color: #334155;
+    }
+
+    .transaction-field input,
+    .transaction-field select,
+    .transaction-field textarea {
+        width: 100%;
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: white;
+        font-family: inherit;
+        font-size: 14px;
+        color: #1e293b;
+    }
+
+    .transaction-field input:focus,
+    .transaction-field select:focus,
+    .transaction-field textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .transaction-hint {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.5;
+    }
+
+    .transaction-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    .transaction-submit {
+        padding: 13px 26px;
+        background: #2563eb;
+        color: #ffffff;
+        font-weight: 700;
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .transaction-submit:hover {
+        background: #1d4ed8;
+    }
+
+    .transaction-back {
+        padding: 13px 22px;
+        color: #475569;
+        text-decoration: none;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .transaction-back:hover {
+        background: #f1f5f9;
+    }
+
+    .transaction-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .transaction-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .transaction-table th {
+        text-align: left;
+        background: #f8fafc;
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .transaction-table td {
+        padding: 16px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+    }
+
+    .transaction-type,
+    .source-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .type-in {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .type-out {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .type-waste {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .type-adjustment {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .source-demo {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .source-real {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .quantity-positive {
+        color: #15803d;
+        font-weight: 700;
+    }
+
+    .quantity-negative {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        .transaction-panel {
+            padding: 22px;
+        }
+
+        .transaction-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .transaction-actions {
+            flex-direction: column-reverse;
+        }
+
+        .transaction-submit,
+        .transaction-back {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+
+<div class="transaction-container">
+
+    <!-- PAGE HEADER -->
+    <section class="welcome-section">
+
+        <p class="eyebrow">
+            INVENTORY MANAGEMENT
+        </p>
+
+        <h1>Inventory Transactions</h1>
+
+        <p class="subtitle">
+            Track stock receipts, consumption,
+            waste, and inventory adjustments.
+        </p>
+
+    </section>
+
+
+    <!-- TRANSACTION FORM -->
+    <section class="transaction-panel">
+
+        <h2>Record New Transaction</h2>
+
+        <p class="transaction-description">
+            Every transaction updates inventory and
+            is saved to transaction history.
+            Current database mode: DEMO.
+        </p>
+
+        <form
+            method="POST"
+            action="{{ url_for('inventory.inventory_transactions') }}"
+        >
+
+            <!-- CSRF PROTECTION -->
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <div class="transaction-grid">
+
+                <!-- INVENTORY ITEM -->
+                <div class="transaction-field">
+
+                    <label for="item_id">
+                        Inventory Item *
+                    </label>
+
+                    <select
+                        name="item_id"
+                        id="item_id"
+                        required
+                    >
+                        <option value="">
+                            Select inventory item
+                        </option>
+
+                        {% for item in items %}
+
+                        <option value="{{ item.id }}">
+                            {{ item.name }}
+                            ({{ item.quantity }} {{ item.unit }})
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- TRANSACTION TYPE -->
+                <div class="transaction-field">
+
+                    <label for="transaction_type">
+                        Transaction Type *
+                    </label>
+
+                    <select
+                        name="transaction_type"
+                        id="transaction_type"
+                        required
+                    >
+
+                        <option value="IN">
+                            Receive Stock (+)
+                        </option>
+
+                        <option value="OUT">
+                            Daily Consumption (-)
+                        </option>
+
+                        <option value="WASTE">
+                            Waste / Damaged (-)
+                        </option>
+
+                        <option value="ADJUSTMENT">
+                            Stock Adjustment
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- QUANTITY -->
+                <div class="transaction-field">
+
+                    <label for="quantity" id="quantityLabel">
+                        Quantity *
+                    </label>
+
+                    <input
+                        type="number"
+                        id="quantity"
+                        name="quantity"
+                        min="0"
+                        max="9999999999.99"
+                        step="0.01"
+                        placeholder="e.g. 5.00"
+                        required
+                    >
+
+                    <span
+                        class="transaction-hint"
+                        id="quantityHint"
+                    >
+                        Enter the quantity to add or remove.
+                    </span>
+
+                </div>
+
+
+                <!-- BUSINESS DATE -->
+                <div class="transaction-field">
+
+                    <label for="business_date">
+                        Business Date *
+                    </label>
+
+                    <input
+                        type="date"
+                        id="business_date"
+                        name="business_date"
+                        value="{{ store_today }}"
+                        max="{{ store_today }}"
+                        required
+                    >
+
+                    <span class="transaction-hint">
+                        Date the inventory transaction
+                        actually occurred.
+                    </span>
+
+                </div>
+
+
+                <!-- NOTES -->
+                <div class="transaction-field">
+
+                    <label for="notes">
+                        Notes (Optional)
+                    </label>
+
+                    <textarea
+                        id="notes"
+                        name="notes"
+                        maxlength="500"
+                        rows="2"
+                        placeholder="e.g. Supplier delivery"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTION BUTTONS -->
+            <div class="transaction-actions">
+
+                <a
+                    class="transaction-back"
+                    href="{{ url_for('inventory.inventory_dashboard') }}"
+                >
+                    Back to Inventory
+                </a>
+
+                <button
+                    class="transaction-submit"
+                    type="submit"
+                >
+                    Save Transaction
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- TRANSACTION HISTORY -->
+    <section class="transaction-panel">
+
+        <h2>Recent Transaction History</h2>
+
+        <p class="transaction-description">
+            Latest 50 inventory transactions.
+            Business Date uses the store's calendar.
+            Recorded At is displayed in UTC.
+        </p>
+
+        <div class="transaction-table-wrapper">
+
+            <table class="transaction-table">
+
+                <thead>
+                    <tr>
+                        <th>Business Date</th>
+                        <th>Recorded At (UTC)</th>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th>Change</th>
+                        <th>Before</th>
+                        <th>After</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for tx in transactions %}
+
+                    <tr>
+
+                        <!-- BUSINESS DATE -->
+                        <td>
+                            {% if tx.business_date %}
+                                {{ tx.business_date.strftime("%Y-%m-%d") }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+
+                        <!-- RECORDED TIMESTAMP -->
+                        <td>
+                            {{ tx.created_at.strftime("%Y-%m-%d %H:%M") }}
+                        </td>
+
+
+                        <!-- ITEM -->
+                        <td>
+                            {{ item_names.get(
+                                tx.inventory_item_id,
+                                "Unknown Item"
+                            ) }}
+                        </td>
+
+
+                        <!-- TYPE -->
+                        <td>
+                            <span class="
+                                transaction-type
+                                type-{{ tx.transaction_type|lower }}
+                            ">
+                                {{ tx.transaction_type }}
+                            </span>
+                        </td>
+
+
+                        <!-- DATA SOURCE -->
+                        <td>
+                            <span class="
+                                source-badge
+                                source-{{ (tx.data_source or 'DEMO')|lower }}
+                            ">
+                                {{ tx.data_source or "DEMO" }}
+                            </span>
+                        </td>
+
+
+                        <!-- QUANTITY CHANGE -->
+                        <td>
+                            {% if tx.quantity_change > 0 %}
+
+                                <span class="quantity-positive">
+                                    +{{ tx.quantity_change }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="quantity-negative">
+                                    {{ tx.quantity_change }}
+                                </span>
+
+                            {% endif %}
+                        </td>
+
+
+                        <!-- BEFORE -->
+                        <td>
+                            {{ tx.quantity_before }}
+                        </td>
+
+
+                        <!-- AFTER -->
+                        <td>
+                            {{ tx.quantity_after }}
+                        </td>
+
+
+                        <!-- NOTES -->
+                        <td>
+                            {{ tx.notes or "—" }}
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td
+                            colspan="9"
+                            style="text-align:center; color:#64748b;"
+                        >
+                            No transactions recorded yet.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+    const transactionType =
+        document.getElementById("transaction_type");
+
+    const quantityLabel =
+        document.getElementById("quantityLabel");
+
+    const quantityHint =
+        document.getElementById("quantityHint");
+
+    function updateQuantityDescription() {
+
+        if (transactionType.value === "ADJUSTMENT") {
+
+            quantityLabel.textContent =
+                "New Counted Stock Quantity *";
+
+            quantityHint.textContent =
+                "Enter the total physically counted stock, not the difference.";
+
+        } else {
+
+            quantityLabel.textContent = "Quantity *";
+
+            quantityHint.textContent =
+                "Enter the quantity to add or remove.";
+        }
+    }
+
+    transactionType.addEventListener(
+        "change",
+        updateQuantityDescription
+    );
+
+    updateQuantityDescription();
+</script>
+
+{% endblock %}

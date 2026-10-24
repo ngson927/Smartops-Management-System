@@ -1,0 +1,646 @@
+
+/* =========================================
+   SMARTOPS MANAGEMENT SYSTEM
+   GLOBAL DESIGN SYSTEM
+========================================= */
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --accent: #0f766e;
+    --accent-dark: #115e59;
+
+    --background: #f4f7fb;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+
+    --sidebar: #101e36;
+    --sidebar-hover: #243653;
+
+    --success: #16a34a;
+    --danger: #dc2626;
+
+    --radius: 14px;
+    --shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+/* =========================================
+   GLOBAL RESET & TYPOGRAPHY
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+h1 {
+    font-size: 34px;
+    font-weight: 750;
+    letter-spacing: -0.8px;
+    margin: 0 0 8px;
+}
+
+h2 {
+    letter-spacing: -0.3px;
+}
+
+p {
+    line-height: 1.6;
+}
+
+a {
+    color: var(--primary);
+}
+
+.subtitle {
+    color: var(--muted);
+}
+
+/* =========================================
+   SHARED COMPONENTS
+========================================= */
+
+.card,
+.table-container,
+.chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.button,
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 12px 18px;
+    background: var(--primary);
+    color: white;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.button:hover,
+button:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.button:focus-visible,
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 3px;
+}
+
+input,
+select,
+textarea {
+    padding: 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 15px;
+
+    max-width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+/* =========================================
+   APPLICATION LAYOUT
+========================================= */
+
+.app-shell {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.app-main {
+    min-width: 0;
+    padding: 48px;
+}
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.sidebar {
+    background: var(--sidebar);
+    color: white;
+
+    padding: 32px 22px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.brand {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.2;
+}
+
+.brand span {
+    color: #38bdf8;
+}
+
+.brand-subtitle {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin-top: 42px;
+}
+
+.nav-link {
+    display: block;
+
+    color: #cbd5e1;
+    text-decoration: none;
+
+    padding: 13px 16px;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+    background: var(--sidebar-hover);
+    color: white;
+}
+
+/* =========================================
+   SIDEBAR FOOTER
+========================================= */
+
+.sidebar-footer {
+    margin-top: auto;
+
+    padding-top: 24px;
+    border-top: 1px solid #334155;
+}
+
+.signed-in-label {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.sidebar-footer strong {
+    color: white;
+    font-size: 14px;
+}
+
+.logout-button {
+    width: 100%;
+    margin-top: 16px;
+
+    background: #334155;
+    text-align: left;
+    justify-content: flex-start;
+}
+
+.logout-button:hover {
+    background: #475569;
+}
+
+/* =========================================
+   FLASH MESSAGES
+========================================= */
+
+.app-alert,
+.flash-message {
+    background: #dcfce7;
+    color: #166534;
+
+    padding: 14px 18px;
+    border-radius: 10px;
+
+    margin-bottom: 24px;
+}
+
+/* =========================================
+   HOMEPAGE
+========================================= */
+
+.welcome-section {
+    margin-bottom: 36px;
+}
+
+.eyebrow {
+    color: var(--primary);
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+
+    margin-bottom: 18px;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.feature-card {
+    display: flex;
+    flex-direction: column;
+
+    background: white;
+
+    padding: 30px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    text-decoration: none;
+    color: var(--text);
+
+    box-shadow: var(--shadow);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+a.feature-card:hover {
+    transform: translateY(-2px);
+
+    border-color: #93c5fd;
+
+    box-shadow:
+        0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.feature-icon {
+    font-size: 32px;
+    color: var(--primary);
+    margin-bottom: 24px;
+}
+
+.feature-card h2 {
+    font-size: 20px;
+    margin: 0 0 12px;
+}
+
+.feature-card p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.feature-card span {
+    display: inline-block;
+
+    color: var(--primary);
+    font-weight: 600;
+
+    margin-top: auto;
+}
+
+.feature-card .feature-muted {
+    color: #94a3b8;
+}
+
+/* =========================================
+   INVENTORY DASHBOARD
+========================================= */
+
+.inventory-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin: 28px 0;
+}
+
+.secondary-button {
+    background: var(--accent);
+}
+
+.secondary-button:hover {
+    background: var(--accent-dark);
+}
+
+.inventory-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+
+    margin-bottom: 32px;
+}
+
+.metric-card {
+    padding: 28px;
+}
+
+.metric-card p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 0;
+}
+
+.metric-card h2 {
+    font-size: 32px;
+    margin: 12px 0;
+}
+
+.metric-card span {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* =========================================
+   INVENTORY TABLE
+========================================= */
+
+.inventory-panel {
+    padding: 28px;
+}
+
+.inventory-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 24px;
+}
+
+.inventory-section-header h2 {
+    margin-bottom: 6px;
+}
+
+.inventory-table-scroll {
+    overflow-x: auto;
+}
+
+.inventory-table {
+    width: 100%;
+    min-width: 800px;
+
+    border-collapse: collapse;
+}
+
+.inventory-table th {
+    background: #f8fafc;
+    color: #475569;
+
+    padding: 16px;
+    text-align: left;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.inventory-table td {
+    padding: 18px 16px;
+
+    border-bottom: 1px solid var(--border);
+
+    font-size: 14px;
+}
+
+.inventory-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* =========================================
+   STOCK STATUS
+========================================= */
+
+.status-badge {
+    display: inline-block;
+
+    padding: 6px 12px;
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.status-good {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-low {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* =========================================
+   EDIT BUTTON
+========================================= */
+
+.edit-button {
+    display: inline-block;
+
+    padding: 8px 14px;
+
+    background: #e0e7ff;
+    color: #1d4ed8;
+
+    border-radius: 8px;
+
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.edit-button:hover {
+    background: #c7d2fe;
+    color: #1d4ed8;
+}
+
+/* =========================================
+   ANALYTICS DASHBOARD
+========================================= */
+
+.analytics-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+
+    margin: 30px 0;
+}
+
+.analytics-kpi {
+    padding: 28px;
+}
+
+.analytics-kpi p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.analytics-kpi h2 {
+    font-size: 32px;
+    margin-bottom: 0;
+}
+
+/* =========================================
+   ANALYTICS CHARTS
+========================================= */
+
+.analytics-charts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.analytics-chart-card {
+    background: white;
+
+    padding: 28px;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+    min-width: 0;
+}
+
+.analytics-chart-card h2 {
+    font-size: 20px;
+
+    margin-top: 0;
+    margin-bottom: 24px;
+}
+
+.analytics-chart-container {
+    position: relative;
+    height: 330px;
+}
+
+.analytics-error {
+    color: var(--danger);
+    margin: 16px 0;
+}
+
+.analytics-error:empty {
+    display: none;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 1100px) {
+    .analytics-charts {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1000px) {
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .inventory-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        padding: 20px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+
+        margin-top: 16px;
+    }
+
+    .sidebar-footer {
+        margin-top: 20px;
+    }
+
+    .app-main {
+        padding: 24px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    .inventory-panel {
+        padding: 16px;
+    }
+
+    .inventory-actions {
+        flex-direction: column;
+    }
+
+    .inventory-actions .button {
+        text-align: center;
+    }
+
+    .analytics-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-chart-card {
+        padding: 18px;
+    }
+}

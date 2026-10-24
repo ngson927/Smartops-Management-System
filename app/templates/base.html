@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{% block title %}SmartOps{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="app-shell">
+
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="sidebar">
+
+            <div class="brand">
+                SmartOps<span>.</span>
+            </div>
+
+            <p class="brand-subtitle">
+                Management Platform
+            </p>
+
+
+            <!-- ========== NAVIGATION ========== -->
+            <nav class="sidebar-nav">
+
+                <!-- Dashboard -->
+                <a
+                    href="{{ url_for('home') }}"
+                    class="nav-link"
+                >
+                    ⌂ Dashboard
+                </a>
+
+
+                {% if current_user.is_authenticated %}
+
+                    <!-- Business Insights -->
+                    <a
+                        href="{{ url_for('inventory.business_insights_dashboard') }}"
+                        class="nav-link"
+                    >
+                        ◈ Business Insights
+                    </a>
+
+
+                    <!-- Inventory -->
+                    <a
+                        href="{{ url_for('inventory.inventory_dashboard') }}"
+                        class="nav-link"
+                    >
+                        ▦ Inventory
+                    </a>
+
+
+                    <!-- Inventory Transactions -->
+                    <a
+                        href="{{ url_for('inventory.inventory_transactions') }}"
+                        class="nav-link"
+                    >
+                        ⇄ Transactions
+                    </a>
+
+
+                    <!-- Analytics -->
+                    <a
+                        href="{{ url_for('inventory.analytics_dashboard') }}"
+                        class="nav-link"
+                    >
+                        ◫ Analytics
+                    </a>
+
+
+                    <!-- ML Evaluation -->
+                    <a
+                        href="{{ url_for('inventory.ml_evaluation_dashboard') }}"
+                        class="nav-link"
+                    >
+                        ◇ ML Evaluation
+                    </a>
+
+                {% else %}
+
+                    <!-- Login -->
+                    <a
+                        href="{{ url_for('auth.login') }}"
+                        class="nav-link"
+                    >
+                        Login
+                    </a>
+
+                {% endif %}
+
+            </nav>
+
+
+            <!-- ========== USER INFORMATION ========== -->
+            {% if current_user.is_authenticated %}
+
+                <div class="sidebar-footer">
+
+                    <p class="signed-in-label">
+                        Signed in as
+                    </p>
+
+                    <strong>
+                        {{ current_user.name }}
+                    </strong>
+
+
+                    <!-- Logout -->
+                    <form
+                        action="{{ url_for('auth.logout') }}"
+                        method="POST"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="csrf_token"
+                            value="{{ csrf_token() }}"
+                        >
+
+                        <button
+                            class="logout-button"
+                            type="submit"
+                        >
+                            Logout
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% endif %}
+
+        </aside>
+
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="app-main">
+
+            <!-- Flash Messages -->
+            {% for message in get_flashed_messages() %}
+
+                <div class="app-alert">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+
+            <!-- Page Content -->
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

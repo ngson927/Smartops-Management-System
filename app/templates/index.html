@@ -1,0 +1,73 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Dashboard{% endblock %}
+
+{% block content %}
+
+<section class="welcome-section">
+    <p class="eyebrow">SMARTOPS PLATFORM</p>
+
+    {% if current_user.is_authenticated %}
+        <h1>Welcome back, {{ current_user.name }}!</h1>
+        <p class="subtitle">
+            Manage your business operations and explore
+            inventory analytics from one place.
+        </p>
+    {% else %}
+        <h1>Welcome to SmartOps</h1>
+        <p class="subtitle">
+            A smarter way to manage inventory and
+            understand business performance.
+        </p>
+
+        <a class="button"
+           href="{{ url_for('auth.login') }}">
+            Get Started
+        </a>
+    {% endif %}
+</section>
+
+{% if current_user.is_authenticated %}
+
+<section class="feature-grid">
+
+    <a class="feature-card"
+       href="{{ url_for('inventory.inventory_dashboard') }}">
+        <div class="feature-icon">▦</div>
+        <h2>Inventory Management</h2>
+        <p>
+            Track stock levels, update inventory
+            and monitor low-stock alerts.
+        </p>
+        <span>Open Inventory →</span>
+    </a>
+
+    <a class="feature-card"
+       href="{{ url_for('inventory.analytics_dashboard') }}">
+        <div class="feature-icon">◫</div>
+        <h2>Business Analytics</h2>
+        <p>
+            Explore inventory valuation, category
+            performance and interactive charts.
+        </p>
+        <span>View Analytics →</span>
+    </a>
+
+    <div class="feature-card">
+        <div class="feature-icon">↗</div>
+        <h2>Demand Forecasting</h2>
+        <p>
+            Estimate future inventory demand
+            using historical consumption data.
+        </p>
+        <span class="feature-muted">
+            Forecast dashboard coming next
+        </span>
+    </div>
+
+</section>
+
+{% endif %}
+
+{% endblock %}

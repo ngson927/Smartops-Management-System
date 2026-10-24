@@ -1,0 +1,582 @@
+
+{% extends "base.html" %}
+
+{% block title %}SmartOps - Add Inventory{% endblock %}
+
+{% block content %}
+
+<style>
+
+    /* ======================================
+       ADD INVENTORY PAGE
+    ====================================== */
+
+    .add-inventory-container {
+        max-width: 1050px;
+    }
+
+    .add-inventory-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+
+        padding: 36px;
+
+        box-shadow: 0 5px 20px rgba(
+            15, 23, 42, 0.035
+        );
+
+        margin-top: 28px;
+    }
+
+
+    /* ======================================
+       SECTION HEADERS
+    ====================================== */
+
+    .add-section-header {
+        margin-bottom: 26px;
+    }
+
+    .add-section-header h2 {
+        font-size: 20px;
+        font-weight: 750;
+        color: #1e293b;
+        margin: 0 0 8px;
+    }
+
+    .add-section-header p {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+
+    /* ======================================
+       FORM GRID
+    ====================================== */
+
+    .add-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .add-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        min-width: 0;
+    }
+
+    .add-form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+
+    /* ======================================
+       LABELS
+    ====================================== */
+
+    .add-form-group label {
+        font-size: 14px;
+        font-weight: 650;
+        color: #334155;
+    }
+
+    .add-required {
+        color: #dc2626;
+        margin-left: 3px;
+    }
+
+    .add-optional {
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+
+    /* ======================================
+       INPUT FIELDS
+    ====================================== */
+
+    .add-form-group input {
+        width: 100%;
+
+        padding: 14px 15px;
+
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+
+        font-size: 14px;
+        font-family: inherit;
+
+        color: #1e293b;
+        background: #ffffff;
+
+        outline: none;
+
+        transition:
+            border-color 0.2s,
+            box-shadow 0.2s;
+    }
+
+    .add-form-group input::placeholder {
+        color: #94a3b8;
+    }
+
+    .add-form-group input:focus {
+        border-color: #2563eb;
+
+        box-shadow: 0 0 0 3px
+            rgba(37, 99, 235, 0.10);
+    }
+
+    .add-field-hint {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #94a3b8;
+    }
+
+
+    /* ======================================
+       SECTION DIVIDER
+    ====================================== */
+
+    .add-form-divider {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        margin: 34px 0;
+    }
+
+
+    /* ======================================
+       FORM ACTION BUTTONS
+    ====================================== */
+
+    .add-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+
+        margin-top: 36px;
+
+        padding-top: 26px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .add-cancel-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 13px 24px;
+
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+
+        background: #ffffff;
+        color: #475569;
+
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 650;
+
+        transition: background 0.2s;
+    }
+
+    .add-cancel-button:hover {
+        background: #f1f5f9;
+    }
+
+    .add-submit-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 13px 28px;
+
+        border: none;
+        border-radius: 9px;
+
+        background: #2563eb;
+        color: #ffffff;
+
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+
+        cursor: pointer;
+
+        transition: background 0.2s;
+    }
+
+    .add-submit-button:hover {
+        background: #1d4ed8;
+    }
+
+
+    /* ======================================
+       RESPONSIVE DESIGN
+    ====================================== */
+
+    @media (max-width: 768px) {
+
+        .add-inventory-panel {
+            padding: 24px;
+        }
+
+        .add-form-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .add-form-group.full-width {
+            grid-column: auto;
+        }
+
+        .add-form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .add-cancel-button,
+        .add-submit-button {
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+
+<!-- ======================================
+     PAGE HEADER
+====================================== -->
+
+<div class="add-inventory-container">
+
+    <section class="welcome-section">
+
+        <p class="eyebrow">
+            INVENTORY MANAGEMENT
+        </p>
+
+        <h1>Add Inventory Item</h1>
+
+        <p class="subtitle">
+            Create a new inventory product and configure
+            its stock level, unit cost, and reorder threshold.
+        </p>
+
+    </section>
+
+
+    <!-- ======================================
+         INVENTORY FORM
+    ====================================== -->
+
+    <div class="add-inventory-panel">
+
+        <form
+            method="POST"
+            action="{{ url_for('inventory.add_inventory') }}"
+        >
+
+            <!-- CSRF PROTECTION -->
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+
+            <!-- ======================================
+                 SECTION 1: PRODUCT INFORMATION
+            ====================================== -->
+
+            <div class="add-section-header">
+
+                <h2>Product Information</h2>
+
+                <p>
+                    Enter the basic details of the
+                    inventory product.
+                </p>
+
+            </div>
+
+
+            <div class="add-form-grid">
+
+
+                <!-- SKU -->
+
+                <div class="add-form-group">
+
+                    <label for="sku">
+                        SKU
+                        <span class="add-required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="sku"
+                        name="sku"
+                        maxlength="30"
+                        placeholder="e.g. BLKTEA"
+                        value="{{ request.form.get('sku', '') }}"
+                        required
+                    >
+
+                    <span class="add-field-hint">
+                        Unique product identifier.
+                    </span>
+
+                </div>
+
+
+                <!-- PRODUCT NAME -->
+
+                <div class="add-form-group">
+
+                    <label for="name">
+                        Item Name
+                        <span class="add-required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        maxlength="120"
+                        placeholder="e.g. Classic Black Tea"
+                        value="{{ request.form.get('name', '') }}"
+                        required
+                    >
+
+                    <span class="add-field-hint">
+                        Descriptive product name.
+                    </span>
+
+                </div>
+
+
+                <!-- CATEGORY -->
+
+                <div class="add-form-group">
+
+                    <label for="category">
+                        Category
+                        <span class="add-optional">
+                            (Optional)
+                        </span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="category"
+                        name="category"
+                        maxlength="80"
+                        list="inventory-categories"
+                        placeholder="e.g. Tea"
+                        value="{{ request.form.get('category', '') }}"
+                    >
+
+                    <datalist id="inventory-categories">
+                        <option value="Tea">
+                        <option value="Toppings">
+                        <option value="Dairy">
+                        <option value="Syrups">
+                        <option value="Powders">
+                        <option value="Packaging">
+                        <option value="Other">
+                    </datalist>
+
+                    <span class="add-field-hint">
+                        Used for inventory analytics.
+                    </span>
+
+                </div>
+
+
+                <!-- UNIT -->
+
+                <div class="add-form-group">
+
+                    <label for="unit">
+                        Measurement Unit
+                        <span class="add-required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="unit"
+                        name="unit"
+                        maxlength="20"
+                        list="inventory-units"
+                        placeholder="e.g. bag, kg, bottle"
+                        value="{{ request.form.get('unit', '') }}"
+                        required
+                    >
+
+                    <datalist id="inventory-units">
+                        <option value="bag">
+                        <option value="kg">
+                        <option value="g">
+                        <option value="L">
+                        <option value="ml">
+                        <option value="bottle">
+                        <option value="box">
+                        <option value="pcs">
+                    </datalist>
+
+                    <span class="add-field-hint">
+                        Unit used for stock tracking.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <hr class="add-form-divider">
+
+
+            <!-- ======================================
+                 SECTION 2: STOCK INFORMATION
+            ====================================== -->
+
+            <div class="add-section-header">
+
+                <h2>Stock &amp; Pricing</h2>
+
+                <p>
+                    Set current stock quantities,
+                    reorder thresholds, and unit costs.
+                </p>
+
+            </div>
+
+
+            <div class="add-form-grid">
+
+
+                <!-- CURRENT QUANTITY -->
+
+                <div class="add-form-group">
+
+                    <label for="quantity">
+                        Current Quantity
+                        <span class="add-required">*</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="quantity"
+                        name="quantity"
+                        min="0"
+                        max="9999999999.99"
+                        step="0.01"
+                        placeholder="e.g. 20.00"
+                        value="{{ request.form.get('quantity', '') }}"
+                        required
+                    >
+
+                    <span class="add-field-hint">
+                        Available inventory quantity.
+                    </span>
+
+                </div>
+
+
+                <!-- REORDER LEVEL -->
+
+                <div class="add-form-group">
+
+                    <label for="reorder_level">
+                        Reorder Level
+                        <span class="add-required">*</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="reorder_level"
+                        name="reorder_level"
+                        min="0"
+                        max="9999999999.99"
+                        step="0.01"
+                        placeholder="e.g. 5.00"
+                        value="{{ request.form.get('reorder_level', '') }}"
+                        required
+                    >
+
+                    <span class="add-field-hint">
+                        Low-stock alert threshold.
+                    </span>
+
+                </div>
+
+
+                <!-- UNIT COST -->
+
+                <div class="add-form-group">
+
+                    <label for="unit_cost">
+                        Unit Cost ($)
+                        <span class="add-required">*</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="unit_cost"
+                        name="unit_cost"
+                        min="0"
+                        max="99999999.99"
+                        step="0.01"
+                        placeholder="e.g. 15.00"
+                        value="{{ request.form.get('unit_cost', '') }}"
+                        required
+                    >
+
+                    <span class="add-field-hint">
+                        Purchase cost per measurement unit.
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ======================================
+                 FORM ACTIONS
+            ====================================== -->
+
+            <div class="add-form-actions">
+
+                <a
+                    class="add-cancel-button"
+                    href="{{ url_for('inventory.inventory_dashboard') }}"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    class="add-submit-button"
+                    type="submit"
+                >
+                    + Add Inventory Item
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
